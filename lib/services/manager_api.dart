@@ -49,7 +49,7 @@ class ManagerAPI {
   String defaultPatcherRepo = 'revanced/revanced-patcher';
   String defaultPatchesRepo = 'revanced/revanced-patches';
   String defaultIntegrationsRepo = 'revanced/revanced-integrations';
-  String defaultCliRepo = 'revanced/revanced-cli';
+  String defaultCliRepo = 'Eddy00007/revanced-cli-4.6';
   String defaultManagerRepo = 'revanced/revanced-manager';
   String? patchesVersion = '';
   String? integrationsVersion = '';
