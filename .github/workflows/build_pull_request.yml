@@ -39,7 +39,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh repo clone "${{ github.repository }}"
-          cd revanced-manager
+          cd revanced-managerL
           gh repo set-default "${{ github.repository }}"
           gh pr checkout "${{ inputs.pr-number }}"
           
