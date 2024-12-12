@@ -141,6 +141,15 @@ class SettingsViewModel extends BaseViewModel {
     notifyListeners();
   }
 
+  bool isRipLibsEnabled() {
+    return _managerAPI.isRipLibsEnabled();
+  }
+
+  void showRipLibs(bool value) {
+    _managerAPI.enableRipLibsStatus(value);
+    notifyListeners();
+  }
+
   bool isLastPatchedAppEnabled() {
     return _managerAPI.isLastPatchedAppEnabled();
   }
@@ -151,6 +160,66 @@ class SettingsViewModel extends BaseViewModel {
       _managerAPI.deleteLastPatchedApp();
     }
     notifyListeners();
+  }
+
+  bool isPreReleasesEnabled() {
+    return _managerAPI.isPreReleasesEnabled();
+  }
+
+  Future<void>? showPrelereasesDialog(
+    BuildContext context,
+    bool value,
+  ) {
+    if (value) {
+      return showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(t.warning),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                t.settingsView.preReleasesDialogText,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                t.settingsView.preReleasesDialogText2,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                _managerAPI.enablePreReleasesStatus(true);
+                _toast.showBottom(t.settingsView.restartAppForChanges);
+                Navigator.of(context).pop();
+              },
+              child: Text(t.yesButton),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text(t.noButton),
+            ),
+          ],
+        ),
+      );
+    } else {
+      _managerAPI.enablePreReleasesStatus(false);
+      _toast.showBottom(t.settingsView.restartAppForChanges);
+    }
+    return null;
   }
 
   bool isVersionCompatibilityCheckEnabled() {

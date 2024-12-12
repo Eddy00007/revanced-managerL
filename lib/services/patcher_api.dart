@@ -170,6 +170,9 @@ class PatcherAPI {
     }
 
     if (integrationsFile != null) {
+      if (_managerAPI.isRooted) {
+        await _rootAPI.unmount(packageName, apkFilePath);
+      }
       _dataDir.createSync();
       _tmpDir.createSync();
       final Directory workDir = await _tmpDir.createTemp('tmp-');
@@ -201,6 +204,7 @@ class PatcherAPI {
             'tmpDirPath': tmpDir.path,
             'keyStoreFilePath': _keyStoreFile.path,
             'keystorePassword': _managerAPI.getKeystorePassword(),
+            'ripArchitectureList': _managerAPI.getRipArchitectureList(packageName),
           },
         );
       } on Exception catch (e) {
@@ -416,7 +420,7 @@ class PatcherAPI {
     final String patchVersion = _managerAPI.patchesVersion!;
     final String prefix = appName.toLowerCase().replaceAll(' ', '-');
     final String newName =
-        '$prefix-revanced_v$version-patches_$patchVersion.apk';
+        '$prefix-rvx_v$version-patches_$patchVersion.apk';
     return newName;
   }
 

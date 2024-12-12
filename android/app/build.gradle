@@ -37,7 +37,7 @@ android {
         main.java.srcDirs += 'src/main/kotlin'
     }
     defaultConfig {
-        applicationId "app.revanced.manager.flutter"
+        applicationId "app.rvx.manager.flutter"
         minSdk 26
         targetSdk 34
         versionCode flutterVersionCode.toInteger()
@@ -65,24 +65,24 @@ android {
                     }
                 }
                 signingConfig = signingConfigs.release
-                resValue "string", "app_name", "ReVanced Manager"
+                resValue "string", "app_name", "RVX Manager"
                 applicationVariants.all { variant ->
                     variant.outputs.all {
-                        outputFileName = "revanced-manager-v${flutterVersionName}.apk"
+                        outputFileName = "rvx-manager-v${flutterVersionName}.apk"
                     }
                 }
             } else {
                 signingConfig = signingConfigs.debug
-                resValue "string", "app_name", "ReVanced Manager (Debug)"
+                resValue "string", "app_name", "RVX Manager (Debug)"
                 applicationIdSuffix ".debug"
             }
         }
         debug {
-            resValue "string", "app_name", "ReVanced Manager (Debug)"
+            resValue "string", "app_name", "RVX Manager (Debug)"
             applicationIdSuffix ".debug"
         }
         profile {
-            resValue "string", "app_name", "ReVanced Manager (Profile)"
+            resValue "string", "app_name", "RVX Manager (Profile)"
             applicationIdSuffix ".profile"
         }
     }
@@ -108,7 +108,7 @@ flutter {
 }
 
 dependencies {
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4") // https://pub.dev/packages/flutter_local_notifications#gradle-setup
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.2") // https://pub.dev/packages/flutter_local_notifications#gradle-setup
     implementation("app.revanced:revanced-patcher:19.3.1")
-    implementation("app.revanced:revanced-library:2.2.1")
+    implementation("io.github.inotia00:revanced-library:2.3.0-SNAPSHOT")
 }

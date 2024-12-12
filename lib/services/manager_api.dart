@@ -17,6 +17,7 @@ import 'package:revanced_manager/services/revanced_api.dart';
 import 'package:revanced_manager/services/root_api.dart';
 import 'package:revanced_manager/services/toast.dart';
 import 'package:revanced_manager/ui/widgets/shared/haptics/haptic_checkbox_list_tile.dart';
+import 'package:revanced_manager/utils/about_info.dart';
 import 'package:revanced_manager/utils/check_for_supported_patch.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timeago/timeago.dart';
@@ -31,7 +32,10 @@ class ManagerAPI {
   final String cliRepo = 'revanced-cli';
   late SharedPreferences _prefs;
   List<Patch> patches = [];
+  List<Option> modifiedOptions = [];
   List<Option> options = [];
+  List<String> archs = ['arm64-v8a', 'x86', 'x86_64', 'armeabi-v7a'];
+  List<String> emptyList = [];
   Patch? selectedPatch;
   BuildContext? ctx;
   bool isRooted = false;
@@ -42,15 +46,15 @@ class ManagerAPI {
   int sdkVersion = 0;
   String storedPatchesFile = '/selected-patches.json';
   String keystoreFile =
-      '/sdcard/Android/data/app.revanced.manager.flutter/files/revanced-manager.keystore';
+      '/sdcard/Android/data/app.rvx.manager.flutter/files/revanced-manager.keystore';
   String defaultKeystorePassword = 's3cur3p@ssw0rd';
   String defaultApiUrl = 'https://api.revanced.app/';
   String defaultRepoUrl = 'https://api.github.com';
   String defaultPatcherRepo = 'revanced/revanced-patcher';
-  String defaultPatchesRepo = 'revanced/revanced-patches';
-  String defaultIntegrationsRepo = 'revanced/revanced-integrations';
-  String defaultCliRepo = 'Eddy00007/revanced-cli-4.6';
-  String defaultManagerRepo = 'revanced/revanced-manager';
+  String defaultPatchesRepo = 'inotia00/revanced-patches';
+  String defaultIntegrationsRepo = 'inotia00/revanced-integrations';
+  String defaultCliRepo = 'revanced/revanced-cli';
+  String defaultManagerRepo = 'inotia00/revanced-manager';
   String? patchesVersion = '';
   String? integrationsVersion = '';
 
@@ -69,8 +73,7 @@ class ManagerAPI {
     }
 
     // Migrate to new API URL if not done yet as the old one is sunset.
-    final bool hasMigratedToNewApi =
-        _prefs.getBool('migratedToNewApiUrl') ?? false;
+    final bool hasMigratedToNewApi = _prefs.getBool('migratedToNewApiUrl') ?? false;
     if (!hasMigratedToNewApi) {
       final String apiUrl = getApiUrl().toLowerCase();
       if (apiUrl.contains('releases.revanced.app')) {
@@ -79,17 +82,16 @@ class ManagerAPI {
       }
     }
 
-    final bool hasMigratedToAlternativeSource =
-        _prefs.getBool('migratedToAlternativeSource') ?? false;
+    final bool hasMigratedToAlternativeSource = _prefs.getBool('migratedToAlternativeSource') ?? false;
     if (!hasMigratedToAlternativeSource) {
       final String patchesRepo = getPatchesRepo();
       final String integrationsRepo = getIntegrationsRepo();
-      final bool usingAlternativeSources =
-          patchesRepo.toLowerCase() != defaultPatchesRepo ||
-              integrationsRepo.toLowerCase() != defaultIntegrationsRepo;
+      final bool usingAlternativeSources = patchesRepo.toLowerCase() != defaultPatchesRepo || integrationsRepo.toLowerCase() != defaultIntegrationsRepo;
       _prefs.setBool('useAlternativeSources', usingAlternativeSources);
       _prefs.setBool('migratedToAlternativeSource', true);
     }
+
+    setRipArchitectureList();
   }
 
   Future<int> getSdkVersion() async {
@@ -123,9 +125,6 @@ class ManagerAPI {
   }
 
   String getPatchesRepo() {
-    if (!isUsingAlternativeSources()) {
-      return defaultPatchesRepo;
-    }
     return _prefs.getString('patchesRepo') ?? defaultPatchesRepo;
   }
 
@@ -149,7 +148,7 @@ class ManagerAPI {
   }
 
   bool isPatchesChangeEnabled() {
-    return _prefs.getBool('patchesChangeEnabled') ?? false;
+    return _prefs.getBool('patchesChangeEnabled') ?? true;
   }
 
   void setPatchesChangeEnabled(bool value) {
@@ -291,6 +290,51 @@ class ManagerAPI {
     await _prefs.setBool('universalPatchesEnabled', value);
   }
 
+  Future<void> setRipArchitectureList() async {
+    try {
+      final String architecture = await AboutInfo.getInfo().then((info) {
+        return info['supportedArch'][0];
+      });
+      archs.removeWhere((item) => item.endsWith(architecture));
+      if (archs.length == 4) archs = emptyList;
+    } on Exception catch (e) {
+      if (kDebugMode) {
+        print(e);
+      }
+      archs = emptyList;
+    }
+  }
+
+  /**
+   * For YouTube Music, there is only one architecture in the APK.
+   * Therefore, if a user applies RipLibs to YouTube Music, there is a possibility that there will be no architecture left.
+   * (e.g. if a user patches ARMv7-only YouTube Music on an ARMv8 device)
+   * To avoid this issue, if the app the user is trying to patch is YouTube Music, RipLibs will not be applied.
+   */
+  List<String> getRipArchitectureList(String packageName) {
+    if (!isRipLibsEnabled() || packageName == 'com.google.android.apps.youtube.music') {
+      return emptyList;
+    } else {
+      return archs;
+    }
+  }
+
+  bool isRipLibsEnabled() {
+    return _prefs.getBool('RipLibsEnabled') ?? false;
+  }
+
+  Future<void> enableRipLibsStatus(bool value) async {
+    await _prefs.setBool('RipLibsEnabled', value);
+  }
+
+  bool isPreReleasesEnabled() {
+    return _prefs.getBool('preReleasesEnabled') ?? false;
+  }
+
+  Future<void> enablePreReleasesStatus(bool value) async {
+    await _prefs.setBool('preReleasesEnabled', value);
+  }
+
   bool isVersionCompatibilityCheckEnabled() {
     return _prefs.getBool('versionCompatibilityCheckEnabled') ?? true;
   }
@@ -308,7 +352,7 @@ class ManagerAPI {
   }
 
   bool isLastPatchedAppEnabled() {
-    return _prefs.getBool('lastPatchedAppEnabled') ?? true;
+    return _prefs.getBool('lastPatchedAppEnabled') ?? false;
   }
 
   Future<void> enableLastPatchedAppStatus(bool value) async {
@@ -478,9 +522,7 @@ class ManagerAPI {
 
   Future<File?> downloadIntegrations() async {
     try {
-      final String repoName = !isUsingAlternativeSources()
-          ? defaultIntegrationsRepo
-          : getIntegrationsRepo();
+      final String repoName = getIntegrationsRepo();
       final String currentVersion = await getCurrentIntegrationsVersion();
       final String url = getIntegrationsDownloadURL();
       return await _githubAPI.getReleaseFile(
@@ -498,75 +540,62 @@ class ManagerAPI {
   }
 
   Future<File?> downloadManager() async {
-    return await _revancedAPI.getLatestReleaseFile(
+    return await _githubAPI.getLatestReleaseFile(
       '.apk',
       defaultManagerRepo,
     );
   }
 
   Future<String?> getLatestPatchesReleaseTime() async {
-    if (!isUsingAlternativeSources()) {
-      return await _revancedAPI.getLatestReleaseTime(
-        '.json',
-        defaultPatchesRepo,
-      );
+    final release = isPreReleasesEnabled()
+        ? await _githubAPI.getLatestReleaseWithPreReleases(getPatchesRepo())
+        : await _githubAPI.getLatestRelease(getPatchesRepo());
+    if (release != null) {
+      final DateTime timestamp = DateTime.parse(release['created_at'] as String);
+      return format(timestamp, locale: 'en_short');
     } else {
-      final release =
-          await _githubAPI.getLatestRelease(getPatchesRepo());
-      if (release != null) {
-        final DateTime timestamp =
-            DateTime.parse(release['created_at'] as String);
-        return format(timestamp, locale: 'en_short');
-      } else {
-        return null;
-      }
+      return null;
     }
   }
 
   Future<String?> getLatestManagerReleaseTime() async {
-    return await _revancedAPI.getLatestReleaseTime(
-      '.apk',
-      defaultManagerRepo,
-    );
+    final release = await _githubAPI.getLatestManagerRelease(defaultManagerRepo);
+    if (release != null) {
+      final DateTime timestamp = DateTime.parse(release['created_at'] as String);
+      return format(timestamp, locale: 'en_short');
+    } else {
+      return null;
+    }
   }
 
   Future<String?> getLatestManagerVersion() async {
-    return await _revancedAPI.getLatestReleaseVersion(
-      '.apk',
-      defaultManagerRepo,
-    );
+    final release = await _githubAPI.getLatestRelease(defaultManagerRepo);
+    if (release != null) {
+      return release['tag_name'];
+    } else {
+      return null;
+    }
   }
 
   Future<String?> getLatestIntegrationsVersion() async {
-    if (!isUsingAlternativeSources()) {
-      return await _revancedAPI.getLatestReleaseVersion(
-        '.apk',
-        defaultIntegrationsRepo,
-      );
+    final release = isPreReleasesEnabled()
+        ? await _githubAPI.getLatestReleaseWithPreReleases(getIntegrationsRepo())
+        : await _githubAPI.getLatestRelease(getIntegrationsRepo());
+    if (release != null) {
+      return release['tag_name'];
     } else {
-      final release = await _githubAPI.getLatestRelease(getIntegrationsRepo());
-      if (release != null) {
-        return release['tag_name'];
-      } else {
-        return null;
-      }
+      return null;
     }
   }
 
   Future<String?> getLatestPatchesVersion() async {
-    if (!isUsingAlternativeSources()) {
-      return await _revancedAPI.getLatestReleaseVersion(
-        '.json',
-        defaultPatchesRepo,
-      );
+    final release = isPreReleasesEnabled()
+        ? await _githubAPI.getLatestReleaseWithPreReleases(getPatchesRepo())
+        : await _githubAPI.getLatestRelease(getPatchesRepo());
+    if (release != null) {
+      return release['tag_name'];
     } else {
-      final release =
-          await _githubAPI.getLatestRelease(getPatchesRepo());
-      if (release != null) {
-        return release['tag_name'];
-      } else {
-        return null;
-      }
+      return null;
     }
   }
 

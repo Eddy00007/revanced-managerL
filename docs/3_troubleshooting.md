@@ -17,7 +17,7 @@ In case you encounter any issues while using ReVanced Manager, this page will he
 - ❗️ Error code `135`, `139` or `1` when patching the app
 
   - You may be trying to patch a split APK[^1]. This can fail under certain circumstances. If that is the case, patch a full APK
-  - Your device may otherwise be unsupported. Please look at the [Prerequisites](0_prerequisites.md) page to see if your device is supported. Alternatively, you can use [ReVanced CLI](https://github.com/Eddy00007/revanced-cli-4.6) to patch the app.
+  - Your device may otherwise be unsupported. Please look at the [Prerequisites](0_prerequisites.md) page to see if your device is supported. Alternatively, you can use [ReVanced CLI](https://github.com/revanced/revanced-cli) to patch the app.
 
 - 🚨 Patched app crashes on launch
 

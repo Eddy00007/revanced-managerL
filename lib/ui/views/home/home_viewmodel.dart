@@ -84,8 +84,8 @@ class HomeViewModel extends BaseViewModel {
         .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>()
         ?.requestNotificationsPermission();
-    final bool isConnected = !(await Connectivity().checkConnectivity())
-        .contains(ConnectivityResult.none);
+    final bool isConnected =
+        await Connectivity().checkConnectivity() != [ConnectivityResult.none];
     if (!isConnected) {
       _toast.showBottom(t.homeView.noConnection);
     }
@@ -168,7 +168,7 @@ class HomeViewModel extends BaseViewModel {
 
   Future<File?> downloadManager() async {
     try {
-      final response = await _revancedAPI.downloadManager();
+      final response = await _managerAPI.downloadManager();
       final bytes = await response!.readAsBytes();
       final tempDir = await getTemporaryDirectory();
       final tempFile = File('${tempDir.path}/revanced-manager.apk');
@@ -235,6 +235,9 @@ class HomeViewModel extends BaseViewModel {
               onPressed: () async {
                 _managerAPI.setDownloadConsent(true);
                 _managerAPI.setPatchesAutoUpdate(autoUpdate.value);
+                _managerAPI.setChangingToggleModified(true);
+                _managerAPI.setPatchesChangeEnabled(true);
+                _managerAPI.useAlternativeSources(true);
                 Navigator.of(context).pop();
               },
               child: Text(t.okButton),
@@ -261,7 +264,7 @@ class HomeViewModel extends BaseViewModel {
               children: [
                 Text(
                   t.homeView.updateDialogText(
-                    file: isPatches ? 'ReVanced Patches' : 'ReVanced Manager',
+                    file: isPatches ? 'ReVanced Patches' : 'RVX Manager',
                     version: isPatches
                         ? _currentPatchesVersion
                         : _currentManagerVersion,
@@ -483,8 +486,9 @@ class HomeViewModel extends BaseViewModel {
   }
 
   Future<String?> getLatestPatchesChangelog() async {
-    final release =
-        await _githubAPI.getLatestRelease(_managerAPI.getPatchesRepo());
+    final release = _managerAPI.isPreReleasesEnabled()
+        ? await _githubAPI.getLatestReleaseWithPreReleases(_managerAPI.getPatchesRepo())
+        : await _githubAPI.getLatestRelease(_managerAPI.getPatchesRepo());
     return release?['body'];
   }
 

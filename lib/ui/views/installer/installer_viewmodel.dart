@@ -191,13 +191,12 @@ class InstallerViewModel extends BaseViewModel {
         _app.isFromStorage,
       );
       _app.appliedPatches = _patches.map((p) => p.name).toList();
-      if (_managerAPI.isLastPatchedAppEnabled()) {
-        await _managerAPI.setLastPatchedApp(_app, _patcherAPI.outFile!);
-      } else {
-        _app.patchedFilePath = _patcherAPI.outFile!.path;
-      }
+      _app.patchedFilePath = _patcherAPI.outFile!.path;
       final homeViewModel = locator<HomeViewModel>();
       _managerAPI.reAssessPatchedApps().then((_) => homeViewModel.getPatchedApps());
+      if (_managerAPI.isLastPatchedAppEnabled()) {
+        await _managerAPI.setLastPatchedApp(_app, _patcherAPI.outFile!);
+      }
     } on Exception catch (e) {
       update(
         -100.0,
@@ -307,7 +306,7 @@ class InstallerViewModel extends BaseViewModel {
     // Add Info
     final formattedLogs = [
       '- Device Info',
-      'ReVanced Manager: ${info['version']}',
+      'RVX Manager: ${info['version']}',
       'Model: ${info['model']}',
       'Android version: ${info['androidVersion']}',
       'Supported architectures: ${info['supportedArch'].join(", ")}',
@@ -324,6 +323,8 @@ class InstallerViewModel extends BaseViewModel {
       'Allow changing patch selection: ${_managerAPI.isPatchesChangeEnabled()}',
       'Version compatibility check: ${_managerAPI.isVersionCompatibilityCheckEnabled()}',
       'Show universal patches: ${_managerAPI.areUniversalPatchesEnabled()}',
+      'Remove unused library: ${_managerAPI.isRipLibsEnabled()}',
+      'Use pre-release: ${_managerAPI.isPreReleasesEnabled()}',
       'Patches source: ${_managerAPI.getPatchesRepo()}',
       'Integration source: ${_managerAPI.getIntegrationsRepo()}', //
 
