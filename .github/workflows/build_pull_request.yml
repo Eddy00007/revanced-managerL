@@ -111,7 +111,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           if-no-files-found: error
-          name: revanced-manager-(${{ env.COMMIT_HASH }}-${{ inputs.pr-number }}-${{ inputs.app-flavour }})
+          name: revanced-managerL-(${{ env.COMMIT_HASH }}-${{ inputs.pr-number }}-${{ inputs.app-flavour }})
           path: |
             build/app/outputs/flutter-apk/app-${{ inputs.app-flavour }}.apk
             build/app/outputs/flutter-apk/app-${{ inputs.app-flavour }}.apk.sha1
