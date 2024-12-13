@@ -47,10 +47,10 @@ class ManagerAPI {
   String defaultApiUrl = 'https://api.revanced.app/';
   String defaultRepoUrl = 'https://api.github.com';
   String defaultPatcherRepo = 'revanced/revanced-patcher';
-  String defaultPatchesRepo = 'revanced/revanced-patches';
-  String defaultIntegrationsRepo = 'revanced/revanced-integrations';
+  String defaultPatchesRepo = 'crimera/piko';
+  String defaultIntegrationsRepo = 'crimera/revanced-integrations';
   String defaultCliRepo = 'Eddy00007/revanced-cli-4.6';
-  String defaultManagerRepo = 'revanced/revanced-manager';
+  String defaultManagerRepo = 'Eddy00007/revanced-managerL';
   String? patchesVersion = '';
   String? integrationsVersion = '';
 
