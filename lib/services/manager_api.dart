@@ -69,8 +69,7 @@ class ManagerAPI {
     }
 
     // Migrate to new API URL if not done yet as the old one is sunset.
-    final bool hasMigratedToNewApi =
-        _prefs.getBool('migratedToNewApiUrl') ?? false;
+    final bool hasMigratedToNewApi = _prefs.getBool('migratedToNewApiUrl') ?? false;
     if (!hasMigratedToNewApi) {
       final String apiUrl = getApiUrl().toLowerCase();
       if (apiUrl.contains('releases.revanced.app')) {
@@ -79,14 +78,11 @@ class ManagerAPI {
       }
     }
 
-    final bool hasMigratedToAlternativeSource =
-        _prefs.getBool('migratedToAlternativeSource') ?? false;
+    final bool hasMigratedToAlternativeSource = _prefs.getBool('migratedToAlternativeSource') ?? false;
     if (!hasMigratedToAlternativeSource) {
       final String patchesRepo = getPatchesRepo();
       final String integrationsRepo = getIntegrationsRepo();
-      final bool usingAlternativeSources =
-          patchesRepo.toLowerCase() != defaultPatchesRepo ||
-              integrationsRepo.toLowerCase() != defaultIntegrationsRepo;
+      final bool usingAlternativeSources = patchesRepo.toLowerCase() != defaultPatchesRepo || integrationsRepo.toLowerCase() != defaultIntegrationsRepo;
       _prefs.setBool('useAlternativeSources', usingAlternativeSources);
       _prefs.setBool('migratedToAlternativeSource', true);
     }
@@ -123,9 +119,6 @@ class ManagerAPI {
   }
 
   String getPatchesRepo() {
-    if (!isUsingAlternativeSources()) {
-      return defaultPatchesRepo;
-    }
     return _prefs.getString('patchesRepo') ?? defaultPatchesRepo;
   }
 
@@ -459,7 +452,7 @@ class ManagerAPI {
 
   Future<File?> downloadPatches() async {
     try {
-      final String repoName = getPatchesRepo();
+      final String repoName = !isUsingAlternativeSources() ? defaultPatchesRepo : getPatchesRepo();
       final String currentVersion = await getCurrentPatchesVersion();
       final String url = getPatchesDownloadURL();
       return await _githubAPI.getReleaseFile(
@@ -478,9 +471,7 @@ class ManagerAPI {
 
   Future<File?> downloadIntegrations() async {
     try {
-      final String repoName = !isUsingAlternativeSources()
-          ? defaultIntegrationsRepo
-          : getIntegrationsRepo();
+      final String repoName = !isUsingAlternativeSources() ? defaultIntegrationsRepo : getIntegrationsRepo();
       final String currentVersion = await getCurrentIntegrationsVersion();
       final String url = getIntegrationsDownloadURL();
       return await _githubAPI.getReleaseFile(
